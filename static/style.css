@@ -1,3 +1,16 @@
+
 .message {
     border-top: 1px solid lightgray;
+}
+
+.messages {
+    padding-left: 1em;
+    padding-top: 5px;
+    height: 80%;
+    border: gray 1px solid;
+    overflow-y: scroll;
+}
+
+.textinput {
+    width:100%;
 }
