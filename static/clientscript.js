@@ -1,4 +1,5 @@
 var socket = io.connect(document.domain);
+var notification_sound = new Audio("/notification.ogg");
 function randUsername(){
     var num = Math.floor((Math.random()*1000)+1);
     return "Guest " + num;
@@ -9,6 +10,11 @@ function login(username){
 function changeNick(username){
     socket.emit('setnick', {user: username});
 }
+
+function playNotification(){
+    notification_sound.play();
+}
+
 $(document).ready( function(){
     var start_name = randUsername();
     login(start_name);
@@ -31,5 +37,6 @@ $(document).ready( function(){
 
 socket.on('chat', function (data) {
     $("#msgbox").append("<div class=\"message\"><strong>" + data.user + "</strong>" + ": " + data.msg + "<br\></div>");
+    playNotification();
     $("#msgbox").scrollTop(1000000);
 });
