@@ -36,7 +36,14 @@ $(document).ready( function(){
 });
 
 socket.on('chat', function (data) {
-    $("#msgbox").append("<div class=\"message\"><strong>" + data.user + "</strong>" + ": " + data.msg + "<br\></div>");
+    var div_class = "message";
+    if (data.user == "Server"){
+	div_class = "message server-message";
+    }
+    
+    $("#msgbox").append("<div class=\"" + div_class + "\"><strong>" +
+			data.user + "</strong>" + ": " + data.msg +
+			"<br\></div>");
     playNotification();
     $("#msgbox").scrollTop(1000000);
 });

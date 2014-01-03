@@ -33,7 +33,7 @@ function tellSocket(socket, username, message){
 }
 
 /* Hopefully renders any text safe for display, as long as the text is
-   placed in a sensible place (Not in an attributes field, etc. */
+   placed in a sensible place (Not in an attributes field, etc.) */
 function sanitize_HTML(text){
     if (text == undefined){
 	return "";
@@ -48,18 +48,37 @@ function sanitize_HTML(text){
     return text;
 }
 
-function correct_username(name){
-    name = name.substring(0,50); // Limit username length
-    return name;
+function validate_username(name){
+    if (name.length > 50){
+	return {valid: false, reason: "Username is too long."};
+    }
+    if (name.toLowerCase() === "server"){
+	return {valid: false, reason: "Username cannot be 'Server'."};
+    }
+    if (name === ""){
+	return {valid: false, reason: "Username cannot be empty."};
+    }
+    return {valid: true};
 }
+    
 io.sockets.on('connection', function (socket) {
-    socket.emit('chat', { user: 'Server', msg: 'You Have Connected' });
+    tellSocket(socket, "Server", "You have connected.");
     socket.on('login', function(data){
-	var correctname = correct_username(data.user);
-	socket.set('username', correctname);
-	tellAll("Server", correctname + " has logged in.");
+	if (typeof data.user != "string") return;
+	var validation_results = validate_username(data.user);
+	if (validation_results.valid === true){
+	    socket.set('username', data.user);
+	    tellAll("Server", data.user + " has logged in.");
+	} else {
+	    tellSocket(socket, "Server", "You have been disconnected due to an invalid username: " + validation_results.reason);
+	    socket.disconnect();
+	}
+	
     });
     socket.on('chatback', function (data) {
+	if (typeof data.msg != "string"){
+	    return;
+	}
 	if (data.msg == ""){
 	    tellSocket(socket, "Server", "Messages must have content.");
 	    return;
@@ -69,13 +88,19 @@ io.sockets.on('connection', function (socket) {
 	});
     });
     socket.on('setnick', function (data){
+	if (typeof data.user != "string") return;
 	socket.get("username", function(err, oldname){
-	    var correctname = correct_username(data.user);
-	    tellAll("Server",
-		    oldname +
-		    " has changed their name to " +
-		    correctname);
-	    socket.set("username", correctname);
+	    var validation_results = validate_username(data.user);
+	    if (validation_results.valid === true){
+		tellAll("Server",
+			oldname +
+			" has changed their name to " +
+			data.user);
+		socket.set("username", data.user);
+	    } else {
+		tellSocket(socket, "Server", "Your new username is invalid: " + validation_results.reason);
+	    }
+		
 	});
 	
     });

@@ -3,6 +3,9 @@
     border-top: 1px solid lightgray;
 }
 
+.server-message{
+    background: #eeeeee;
+}
 .messages {
     padding-left: 1em;
     padding-top: 5px;
